@@ -3,6 +3,7 @@ import App from './App'
 
 Vue.config.productionTip = false
 
+import 'toastr/build/toastr.css'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.js'
 

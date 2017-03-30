@@ -16,6 +16,7 @@ import MusicSearch from './components/MusicSearch'
 import MusicResult from './components/MusicResult'
 import PageNav from './components/PageNav'
 
+import toastr from 'toastr'
 import $ from 'jquery'
 
 const spotifyAPI = {
@@ -88,10 +89,15 @@ export default {
               })
             }
           }
+
+          if (self.results.length === 0) {
+            toastr.warning('We could not find any results. <br />Sorry ...')
+          } else {
+            toastr.success('There you go!')
+          }
         })
         .fail(function (jqXHR, textStatus) {
-          console.log('fail')
-          console.log(textStatus)
+          toastr.error(`${textStatus}: something weird happened. Are you connected to the internet? If so, you might need support.`)
         })
     }
   }
