@@ -1,10 +1,9 @@
+import os
 import requests
 from flask import Flask, request, jsonify
 from marshmallow import Schema, fields, validate
 from urllib.parse import urlencode
 
-
-app = Flask('mylittlejob')
 
 SPOTIFY_API = dict(
     search='https://api.spotify.com/v1/search?'
@@ -37,28 +36,43 @@ class SpotifySearchSchema(Schema):
 spotify_search_schema = SpotifySearchSchema()
 
 
-@app.route("/spotify/search")
-def spotify_search():
-    """Searchs the spotify API."""
-    # load and validate data
-    data, errors = spotify_search_schema.load(request.args)
+def app_factory(config_cls_or_path=None):
+    app = Flask('mylittlejob')
 
-    if errors:
-        return jsonify({'message': errors}), 400
+    if isinstance(config_cls_or_path, str):
+        if os.path.exists(config_cls_or_path):
+            app.config.from_pyfile(config_cls_or_path)
+        else:
+            app.config.from_envvar(config_cls_or_path, False)
 
-    querystr = urlencode({
-        'q': data['term'],
-        'type': data['search_type']
-    })
+    elif isinstance(config_cls_or_path, object):
+        app.config.from_object(config_cls_or_path)
 
-    resp = requests.get(SPOTIFY_API['search'] + querystr)
-    data = resp.json()
-    return jsonify(extract_items(data))
+    @app.route('/spotify/search', endpoint='spotify-search')
+    def spotify_search():
+        """Searchs the spotify API."""
+        # load and validate data
+        data, errors = spotify_search_schema.load(request.args)
+
+        if errors:
+            return jsonify({'message': errors}), 400
+
+        querystr = urlencode({
+            'q': data['term'],
+            'type': data['search_type']
+        })
+
+        resp = requests.get(SPOTIFY_API['search'] + querystr)
+        data = resp.json()
+        return jsonify(extract_items(data))
+
+    return app
 
 
 def pick_thumb(images):
     """
     Picks the image with the *most adequate* size.
+
     Returns a default value if no thumb-like image is found.
     """
     for img in images:
