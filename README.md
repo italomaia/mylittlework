@@ -18,6 +18,17 @@ npm run dev
 
 Your browser will open in the project url.
 
+# Django Side Notes
+
+An Django version of the task was created inside "dj".
+Run it like this:
+
+```shell
+cd dj
+pip install -r requirements.txt
+python manage.py runserver
+```
+
 # Python Side Notes
 
 Python is not really required to run this project,
